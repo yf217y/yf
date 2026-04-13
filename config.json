@@ -1,0 +1,44 @@
+{
+  "log": { "level": "info", "timestamp": true },
+  "dns": {
+    "servers": [
+      { "tag": "dns_proxy", "address": "tls://8.8.8.8" },
+      { "tag": "dns_direct", "address": "https://dns.alidns.com/dns-query", "detour": "DIRECT" },
+      { "tag": "dns_fakeip", "address": "fakeip" }
+    ],
+    "rules": [
+      { "outbound": "any", "server": "dns_direct" },
+      { "query_type": ["A", "AAAA"], "server": "dns_fakeip" }
+    ],
+    "fakeip": { "enabled": true, "inet4_range": "198.18.0.0/15" }
+  },
+  "inbounds": [
+    {
+      "type": "tun", "tag": "tun-in", "inet4_address": "172.19.0.1/30", "auto_route": true, "strict_route": true, "stack": "mixed", "sniff": true
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "🚀 冉冉-主控选择", "type": "selector",
+      "outbounds": ["♻️ 全球自动测速", "🇭🇰 香港自动", "🇯🇵 日本自动", "🇺🇸 美国自动", "🇸🇬 新加坡自动", "🇹🇼 台湾自动", "🟢 手动选择", "🎯 全球直连"]
+    },
+    { "tag": "♻️ 全球自动测速", "type": "urltest", "outbounds": ["{all}"], "url": "http://www.gstatic.com/generate_204", "interval": "3m" },
+    { "tag": "🇭🇰 香港自动", "type": "urltest", "outbounds": ["(香港|HK|Hong Kong)"], "url": "http://www.gstatic.com/generate_204" },
+    { "tag": "🇯🇵 日本自动", "type": "urltest", "outbounds": ["(日本|JP|Japan)"], "url": "http://www.gstatic.com/generate_204" },
+    { "tag": "🇺🇸 美国自动", "type": "urltest", "outbounds": ["(美国|US|United States)"], "url": "http://www.gstatic.com/generate_204" },
+    { "tag": "🇸🇬 新加坡自动", "type": "urltest", "outbounds": ["(新加坡|SG|Singapore)"], "url": "http://www.gstatic.com/generate_204" },
+    { "tag": "🇹🇼 台湾自动", "type": "urltest", "outbounds": ["(台湾|TW|Taiwan)"], "url": "http://www.gstatic.com/generate_204" },
+    { "tag": "🟢 手动选择", "type": "selector", "outbounds": ["{all}"] },
+    { "type": "direct", "tag": "DIRECT" },
+    { "type": "dns", "tag": "dns-out" },
+    { "type": "direct", "tag": "🎯 全球直连" }
+  ],
+  "route": {
+    "rules": [
+      { "protocol": "dns", "outbound": "dns-out" },
+      { "geosite": "cn", "outbound": "DIRECT" },
+      { "geoip": ["cn", "private"], "outbound": "DIRECT" }
+    ],
+    "final": "🚀 冉冉-主控选择", "auto_detect_interface": true
+  }
+}
